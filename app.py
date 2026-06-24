@@ -1,6 +1,6 @@
 import random
 import string
-import sqlite3
+from urllib.parse import urlparse
 from flask import Flask, jsonify, request, redirect
 from database import get_db, close_db, init_db
 
@@ -11,13 +11,27 @@ app.teardown_appcontext(close_db)
 def gerar_codigo(tamanho=6):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=tamanho))
 
+def url_valida(url):
+    try:
+        result = urlparse(url)
+        return all([result.scheme in ['http', 'https'], result.netloc])
+    except:
+        return False
+
 @app.route('/encurtar', methods=['POST'])
 def encurtar():
     dados = request.get_json()
+
+    if not dados:
+        return jsonify({'erro': 'Corpo da requisição inválido'}), 400
+
     url = dados.get('url', '').strip()
 
     if not url:
         return jsonify({'erro': 'URL é obrigatória'}), 400
+
+    if not url_valida(url):
+        return jsonify({'erro': 'URL inválida. Use http:// ou https://'}), 400
 
     codigo = gerar_codigo()
     db = get_db()
@@ -52,6 +66,14 @@ def stats(codigo):
             'criado_em': row['criado_em']
         })
     return jsonify({'erro': 'Código não encontrado'}), 404
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({'erro': 'Rota não encontrada'}), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return jsonify({'erro': 'Erro interno do servidor'}), 500
 
 if __name__ == '__main__':
     init_db()
