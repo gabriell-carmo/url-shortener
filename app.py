@@ -52,7 +52,7 @@ def encurtar():
 
     return jsonify({
         'codigo': codigo,
-        'url_curta': f'http://localhost:5000/{codigo}',
+        'url_curta': f'https://web-production-f4fdb.up.railway.app/{codigo}',
         'url_original': url
     }), 201
 
