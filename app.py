@@ -6,6 +6,18 @@ from database import get_db, close_db, init_db
 
 app = Flask(__name__)
 app.teardown_appcontext(close_db)
+@app.route('/')
+def home():
+    return jsonify({
+        "projeto": "URL Shortener",
+        "autor": "Gabriel Carmo",
+        "endpoints": {
+            "encurtar": "POST /encurtar",
+            "redirecionar": "GET /:codigo",
+            "estatisticas": "GET /stats/:codigo"
+        },
+        "github": "https://github.com/gabriell-carmo/url-shortener"
+    })
 
 
 def gerar_codigo(tamanho=6):
